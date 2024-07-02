@@ -9,7 +9,8 @@ use App\Models\User;
 class UsersController extends Controller
 {
     public function index(){
-        $users = User::latest()->get();
+        //$users = User::query()->latest()->paginate(setting('pagination_limit'));
+        $users = User::query()->latest()->get();
         return $users;
     }
 

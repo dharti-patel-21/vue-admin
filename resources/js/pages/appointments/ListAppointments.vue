@@ -2,13 +2,16 @@
     import axios from 'axios';
     import { ref,onMounted,computed } from 'vue';
     import Swal from 'sweetalert2';
+    import Preloader from '../../components/Preloader.vue';
 
     const appointments = ref([]);
     //const appointmentStatus = {'scheduled':1,'confirmed':2,'cancelled':3};
     const appointmentStatus = ref();
     const selectedStatus = ref();
-
+    const loading = ref(false);
+    
     const getAppointments = (status) => {
+        loading.value = true;
         const params = {};
 
         selectedStatus.value = status;
@@ -20,11 +23,14 @@
         })
         .then((response) => {
             appointments.value = response.data
+            loading.value = false;
         })
     }
 
+    
+
     const getAppointmentStatus = () => {
-        
+       
         axios.get('/api/appointment-status')
         .then((response) => {
             appointmentStatus.value = response.data;
@@ -35,6 +41,12 @@
         //return appointmentStatus.value.map(status => status.count).reduce((acc,value) => acc+value,0)
         return 10
     })
+
+    const updateAppointmentstatusCount = (id) => {
+        const deletedAppointmentstatus =  appointments.value.data.find(appointment => appointment.id === id).status.name;
+        const statusToUpdate =  appointmentStatus.value.find(status => status.name === deletedAppointmentstatus);
+        statusToUpdate.count--;
+    }
 
     const deletAppointmnt = (id) => {
         Swal.fire({
@@ -49,6 +61,7 @@
         if (result.isConfirmed) {
             axios.delete(`/api/appointment/${id}`)
             .then((response) => {
+                updateAppointmentstatusCount(id);
                 appointments.value.data = appointments.value.data.filter(appointment => appointment.id !== id);
                 Swal.fire({
                 title: "Deleted!",
@@ -157,4 +170,6 @@
             </div>
         </div>
     </div>
+    <Preloader :loading="loading"/>
 </template>
+

@@ -6,6 +6,8 @@ use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\Admin\AppointmentController;
 use App\Http\Controllers\Admin\ClientController;
 use App\Http\Controllers\Admin\DashboardStatController;
+use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\ProfileController;
 
 /*
 |--------------------------------------------------------------------------
@@ -27,6 +29,11 @@ Route::get('/', function () {
 //});
 Route::get('/api/stats/appointment', [DashboardStatController::class, 'appointments']);
 Route::get('/api/stats/users', [DashboardStatController::class, 'users']);
+
+Route::get('/api/settings',[SettingsController::class, 'index']);
+Route::post('/api/settings/update',[SettingsController::class, 'update']);
+
+Route::get('/api/profile',[ProfileController::class, 'index']);
 
 Route::get('/api/users', [UsersController::class, 'index']);
 Route::post('/api/createUser', [UsersController::class, 'store']);

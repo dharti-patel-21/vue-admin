@@ -3,16 +3,20 @@ import { ref,onMounted, reactive } from 'vue';
 import axios from 'axios';
 import { Form, Field} from 'vee-validate';
 import * as yup from 'yup';
+import Preloader from '../../components/Preloader.vue';
 
+const loading = ref(false);
 const users = ref([]);
 const editing = ref(false);
 const formValues = ref({ name: '', email: '', password: '' }); 
 const form = ref(null);
 
 const getUsers = () => { 
+    loading.value = true
     axios.get('/api/users')
     .then((response) => {
-        users.value = response.data
+        users.value = response.data;
+        loading.value = false;
     })
 }
 
@@ -89,7 +93,7 @@ const addUser = () => {
                                 <td>{{ index+1 }}</td>
                                 <td>{{ user.name}}</td>
                                 <td>{{ user.email }}</td>
-                                <td>-</td>
+                                <td>{{ user.formatted_created_at }}</td>
                                 <td>-</td>
                                 <td><a href="#" @click.prevent="editUser(user)"><i class="fa fa-edit"></i></a></td>
                             </tr>
@@ -148,4 +152,6 @@ const addUser = () => {
             </div>
         </div>
     </div>
+
+    <Preloader :loading="loading" />
 </template>
