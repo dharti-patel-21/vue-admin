@@ -37,6 +37,8 @@ Route::get('/api/profile',[ProfileController::class, 'index']);
 
 Route::get('/api/users', [UsersController::class, 'index']);
 Route::post('/api/createUser', [UsersController::class, 'store']);
+Route::post('/api/user/update/{user}', [UsersController::class, 'update']);
+Route::delete('/api/user/delete/{user}', [UsersController::class, 'destroy']);
 
 Route::get('/api/appointments', [AppointmentController::class, 'index']);
 Route::get('/api/appointment-status', [AppointmentController::class, 'getAppointmentStatus']);
