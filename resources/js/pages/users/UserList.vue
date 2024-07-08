@@ -6,6 +6,7 @@ import * as yup from 'yup';
 import Preloader from '../../components/Preloader.vue';
 import { error } from 'toastr';
 import {useToastr} from '../../toastr.js';
+import UserListItem from './UserListItem.vue';
 
 const toastr = useToastr();
 const loading = ref(false);
@@ -13,7 +14,6 @@ const users = ref([]);
 const editing = ref(false);
 const formValues = ref(); 
 const form = ref(null);
-const userIdToBeDeleted = ref(null);
 
 const getUsers = () => { 
     loading.value = true
@@ -95,18 +95,8 @@ const addUser = () => {
     $("#createUserModal").modal('show');
 }
 
-const confirmUserDeletion = (user) => {
-    userIdToBeDeleted.value = user.id;
-    $('#deleteUserModal').modal('show');
-}
-
-const deleteUser = () => {
-    axios.delete(`/api/user/delete/${userIdToBeDeleted.value}`)
-    .then((response) => {
-        $('#deleteUserModal').modal('hide');
-        users.value = users.value.filter(user => user.id !== userIdToBeDeleted.value);
-        toastr.success('User Deleted Successfully!');
-    })
+const userDeleted = (userId) => {
+    users.value = users.value.filter(user => user.id !== userId)
 }
 
 onMounted(() => {
@@ -151,17 +141,12 @@ onMounted(() => {
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="(user,index) in users " :key="user.id">
-                                <td>{{ index+1 }}</td>
-                                <td>{{ user.name}}</td>
-                                <td>{{ user.email }}</td>
-                                <td>{{ user.formatted_created_at }}</td>
-                                <td>-</td>
-                                <td>
-                                    <a href="#" @click.prevent="editUser(user)"><i class="fa fa-edit"></i></a>
-                                    <a href="#" @click.prevent="confirmUserDeletion(user)"><i class="fa fa-trash text-danger ml-2"></i></a>
-                                </td>
-                            </tr>
+                            <UserListItem v-for="(user,index) in users" 
+                            :key="user.id"
+                            :user=user 
+                            :index=index
+                            @edit-user="editUser"
+                            @user-deleted="userDeleted" />
                         </tbody>
                     </table>
                 </div>
@@ -217,28 +202,7 @@ onMounted(() => {
         </div>
     </div>
 
-    <!--modal-->
-    <div class="modal fade" id="deleteUserModal" data-backdrop="static" tabindex="-1" role="dialog" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="staticBackdropLabel">
-                        <span> Delete User</span>
-                    </h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <h5>Are you sure you want to delete this user?</h5>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button @click.prevent="deleteUser" type="button" class="btn btn-primary">Delete</button>
-                </div>
-            </div>
-        </div>
-    </div>
+    
 
     <Preloader :loading="loading" />
 </template>
