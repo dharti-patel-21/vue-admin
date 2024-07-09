@@ -1,5 +1,5 @@
 <script setup>
-import { ref,onMounted, reactive } from 'vue';
+import { ref,onMounted, reactive, watch } from 'vue';
 import axios from 'axios';
 import { Form, Field} from 'vee-validate';
 import * as yup from 'yup';
@@ -7,17 +7,19 @@ import Preloader from '../../components/Preloader.vue';
 import { error } from 'toastr';
 import {useToastr} from '../../toastr.js';
 import UserListItem from './UserListItem.vue';
+import { debounce } from 'lodash';
+import { Bootstrap4Pagination } from 'laravel-vue-pagination'
 
 const toastr = useToastr();
 const loading = ref(false);
-const users = ref([]);
+const users = ref({'data':[]});
 const editing = ref(false);
 const formValues = ref(); 
 const form = ref(null);
 
-const getUsers = () => { 
+const getUsers = (page = 1) => { 
     loading.value = true
-    axios.get('/api/users')
+    axios.get(`/api/users?page=${page}`)
     .then((response) => {
         users.value = response.data;
         loading.value = false;
@@ -99,6 +101,62 @@ const userDeleted = (userId) => {
     users.value = users.value.filter(user => user.id !== userId)
 }
 
+const searchQuery = ref(null);
+
+const search = () => {
+    axios.get('/api/user/search', {
+        params: {
+            query: searchQuery.value
+        }
+    })
+    .then((response) => {
+        users.value = response.data;
+    })
+    .catch(error => {
+        console.log(error);
+    })
+}
+
+watch(searchQuery, debounce(() => {
+    search();
+}, 300));
+
+const selectedUsers = ref([]);
+
+const toggleSelection = (user) => {
+    const index = selectedUsers.value.indexOf(user.id);
+    if(index === -1){
+        selectedUsers.value.push(user.id);
+    }else{
+        selectedUsers.value.splice(index,1);
+    }
+    
+}
+
+const bulkDelete = () => {
+    axios.delete('/api/users/delete', {
+        data: {
+            ids: selectedUsers.value
+        }
+    })
+    .then(response => {
+        users.value.data = users.value.data.filter(user => !selectedUsers.value.includes(user.id));
+        selectedUsers.value = [];
+        selectAll.value = false;
+        toastr.success('User/s Deleted Successfully!');
+    })
+}
+
+const selectAll = ref(false);
+
+const selectAllUsers = () => {
+    if(selectAll.value){
+        selectedUsers.value = users.value.data.map(user => user.id);
+    }else{
+        selectedUsers.value = [];
+    }
+}
+
 onMounted(() => {
     getUsers();
 })
@@ -124,14 +182,25 @@ onMounted(() => {
 
     <div class="content">
         <div class="container-fluid">
-            <button type="button" @click="addUser" class="mb-2 btn btn-primary">
-                Add New User
-            </button>
+            <div class="d-flex justify-content-between">
+                <div>
+                    <button type="button" @click="addUser" class="mb-2 btn btn-primary">
+                        Add New User
+                    </button>
+                    <button v-if="selectedUsers.length > 0" type="button" @click="bulkDelete" class="ml-2 mb-2 btn btn-danger">
+                        Delete Selected
+                    </button>
+                </div>
+                <div>
+                    <input type="text" v-model="searchQuery" class="form-control" placeholder="Search..."/>
+                </div>
+            </div>
             <div class="card">
                 <div class="card-body">
                     <table class="table table-bordered">
                         <thead>
                             <tr>
+                                <th><input type="checkbox" v-model="selectAll" @change="selectAllUsers"></th>
                                 <th>#</th>
                                 <th>Name</th>
                                 <th>Email</th>
@@ -140,17 +209,25 @@ onMounted(() => {
                                 <th>Options</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <UserListItem v-for="(user,index) in users" 
+                        <tbody v-if="users.data.length > 0">
+                            <UserListItem v-for="(user,index) in users.data" 
                             :key="user.id"
                             :user=user 
                             :index=index
                             @edit-user="editUser"
-                            @user-deleted="userDeleted" />
+                            @user-deleted="userDeleted" 
+                            @toggle-selection="toggleSelection"
+                            :select-all="selectAll"/>
+                        </tbody>
+                        <tbody v-else>
+                            <tr>
+                                <td colspan="6" class="text-center">No Data Found</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
+            <Bootstrap4Pagination :data="users" @pagination-change-page="getUsers"/>
         </div>
 
     </div>

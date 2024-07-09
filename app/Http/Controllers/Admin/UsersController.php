@@ -10,7 +10,7 @@ class UsersController extends Controller
 {
     public function index(){
         //$users = User::query()->latest()->paginate(setting('pagination_limit'));
-        $users = User::query()->latest()->get();
+        $users = User::query()->latest()->paginate(2);
         return $users;
     }
 
@@ -51,6 +51,19 @@ class UsersController extends Controller
         $user->update([
             'role' => request('role')
         ]);
+
+        return response()->json(['success' => true]);
+    }
+
+    public function search(){
+        $searchQuery = request('query');
+        
+        $users = User::where('name','like',"%{$searchQuery}%")->paginate(2);
+        return response()->json($users);
+    }
+
+    public function bulkDelete(){
+        User::whereIn('id',request('ids'))->delete();
 
         return response()->json(['success' => true]);
     }
