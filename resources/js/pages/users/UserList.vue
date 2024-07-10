@@ -19,9 +19,15 @@ const form = ref(null);
 
 const getUsers = (page = 1) => { 
     loading.value = true
-    axios.get(`/api/users?page=${page}`)
+    axios.get(`/api/users?page=${page}`, {
+        params: {
+            query: searchQuery.value
+        }
+    })
     .then((response) => {
         users.value = response.data;
+        selectedUsers.value = [];
+        selectAll.value = false
         loading.value = false;
     })
 }
@@ -88,7 +94,7 @@ const editUser = (user) => {
         id: user.id,
         name: user.name,
         email: user.email
-    }; // Clone user object to avoid direct reactivity issues
+    }; 
     
 };
 
@@ -103,22 +109,8 @@ const userDeleted = (userId) => {
 
 const searchQuery = ref(null);
 
-const search = () => {
-    axios.get('/api/user/search', {
-        params: {
-            query: searchQuery.value
-        }
-    })
-    .then((response) => {
-        users.value = response.data;
-    })
-    .catch(error => {
-        console.log(error);
-    })
-}
-
 watch(searchQuery, debounce(() => {
-    search();
+    getUsers();
 }, 300));
 
 const selectedUsers = ref([]);
@@ -183,13 +175,18 @@ onMounted(() => {
     <div class="content">
         <div class="container-fluid">
             <div class="d-flex justify-content-between">
-                <div>
+                <div class="d-flex">
                     <button type="button" @click="addUser" class="mb-2 btn btn-primary">
+                        <i class="fa fa-plus-circle mr-1"></i>
                         Add New User
                     </button>
-                    <button v-if="selectedUsers.length > 0" type="button" @click="bulkDelete" class="ml-2 mb-2 btn btn-danger">
-                        Delete Selected
-                    </button>
+                    <div v-if="selectedUsers.length > 0">
+                        <button type="button" @click="bulkDelete" class="ml-2 mb-2 btn btn-danger">
+                            <i class="fa fa-trash mr-1"></i>
+                            Delete Selected
+                        </button>
+                        <span class="ml-2">Selected {{ selectedUsers.length }} Users</span>
+                    </div>
                 </div>
                 <div>
                     <input type="text" v-model="searchQuery" class="form-control" placeholder="Search..."/>

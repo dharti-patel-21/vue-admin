@@ -10,7 +10,10 @@ class UsersController extends Controller
 {
     public function index(){
         //$users = User::query()->latest()->paginate(setting('pagination_limit'));
-        $users = User::query()->latest()->paginate(2);
+        $users = User::query()
+            ->when(request('query'), function ($query,$searchQuery) {
+                $query->where('name','like',"%{$searchQuery}%");
+            })->latest()->paginate(2);
         return $users;
     }
 

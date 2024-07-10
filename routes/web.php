@@ -27,30 +27,35 @@ Route::get('/', function () {
 //Route::get('/admin/dashboard', function() {
 //    return view('dashboard');
 //});
-Route::get('/api/stats/appointment', [DashboardStatController::class, 'appointments']);
-Route::get('/api/stats/users', [DashboardStatController::class, 'users']);
 
-Route::get('/api/settings',[SettingsController::class, 'index']);
-Route::post('/api/settings/update',[SettingsController::class, 'update']);
+Route::middleware('auth')->group(function () {
+    Route::get('/api/stats/appointment', [DashboardStatController::class, 'appointments']);
+    Route::get('/api/stats/users', [DashboardStatController::class, 'users']);
 
-Route::get('/api/profile',[ProfileController::class, 'index']);
+    Route::get('/api/settings',[SettingsController::class, 'index']);
+    Route::post('/api/settings/update',[SettingsController::class, 'update']);
 
-Route::get('/api/users', [UsersController::class, 'index']);
-Route::post('/api/createUser', [UsersController::class, 'store']);
-Route::post('/api/user/update/{user}', [UsersController::class, 'update']);
-Route::delete('/api/user/delete/{user}', [UsersController::class, 'destroy']);
-Route::patch('/api/user/{user}/changeRole', [UsersController::class, 'changeRole']);
-Route::get('/api/user/search',[UsersController::class, 'search']);
-Route::delete('/api/users/delete', [UsersController::class, 'bulkDelete']);
+    Route::get('/api/profile',[ProfileController::class, 'index']);
 
-Route::get('/api/appointments', [AppointmentController::class, 'index']);
-Route::get('/api/appointment-status', [AppointmentController::class, 'getAppointmentStatus']);
-Route::post('/api/appointments/create', [AppointmentController::class, 'store']);
-Route::get('/api/appointment/{appointment}/edit', [AppointmentController::class, 'edit']);
-Route::put('/api/appointment/{appointment}/udpate', [AppointmentController::class, 'update']);
-Route::delete('/api/appointment/{appointment}', [AppointmentController::class, 'destroy']);
+    Route::get('/api/users', [UsersController::class, 'index']);
+    Route::post('/api/createUser', [UsersController::class, 'store']);
+    Route::post('/api/user/update/{user}', [UsersController::class, 'update']);
+    Route::delete('/api/user/delete/{user}', [UsersController::class, 'destroy']);
+    Route::patch('/api/user/{user}/changeRole', [UsersController::class, 'changeRole']);
+    Route::get('/api/user/search',[UsersController::class, 'search']);
+    Route::delete('/api/users/delete', [UsersController::class, 'bulkDelete']);
 
-Route::get('{view}',ApplicationController::class)->where('view','(.*)');
+    Route::get('/api/appointments', [AppointmentController::class, 'index']);
+    Route::get('/api/appointment-status', [AppointmentController::class, 'getAppointmentStatus']);
+    Route::post('/api/appointments/create', [AppointmentController::class, 'store']);
+    Route::get('/api/appointment/{appointment}/edit', [AppointmentController::class, 'edit']);
+    Route::put('/api/appointment/{appointment}/udpate', [AppointmentController::class, 'update']);
+    Route::delete('/api/appointment/{appointment}', [AppointmentController::class, 'destroy']);
+
+});
+
+
+Route::get('{view}',ApplicationController::class)->where('view','(.*)')->middleware('auth');
 
 Route::get('/api/client',[ClientController::class, 'new']);
 
