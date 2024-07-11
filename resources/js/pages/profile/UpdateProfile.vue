@@ -1,8 +1,9 @@
 <script setup>
-import { onMounted, reactive } from "vue";
+import { onMounted, ref } from "vue";
+import { useToastr } from "../../toastr";
 
-
-const form = reactive({
+const toastr = useToastr();
+const form = ref({
     name: '',
     email: '',
     role: ''
@@ -13,6 +14,19 @@ const getUser = () => {
     .then((response) => {
         form.value = response.data;
     })
+}
+
+const errors = ref([]);
+const updateProfile = () => {
+    axios.put('/api/update/profile',form.value)
+    .then((response) => {
+        toastr.success('Profile Updated Successfully!');
+    })
+    .catch((error) => {
+        if(error.response && error.response.status === 422){
+            errors.value = error.response.data.errors;
+        }
+    });
 }
 
 onMounted(() => {
@@ -48,9 +62,9 @@ onMounted(() => {
                                 <img class="profile-user-img img-circle" src="/noimage.png" alt="User profile picture">
                             </div>
 
-                            <h3 class="profile-username text-center">John Doe</h3>
+                            <h3 class="profile-username text-center">{{ form.name }}</h3>
 
-                            <p class="text-muted text-center">Admin</p>
+                            <p class="text-muted text-center">{{ form.role }}</p>
                         </div>
                     </div>
                 </div>
@@ -67,17 +81,19 @@ onMounted(() => {
                         <div class="card-body">
                             <div class="tab-content">
                                 <div class="tab-pane active" id="profile">
-                                    <form class="form-horizontal">
+                                    <form @submit.prevent="updateProfile()" class="form-horizontal">
                                         <div class="form-group row">
                                             <label for="inputName" class="col-sm-2 col-form-label">Name</label>
                                             <div class="col-sm-10">
-                                                <input type="text" class="form-control" id="inputName" placeholder="Name">
+                                                <input v-model="form.name" type="text" class="form-control" id="inputName" placeholder="Name">
+                                                <span class="text-danger text-sm" v-if="errors && errors.name">{{ errors.name[0] }}</span>
                                             </div>
                                         </div>
                                         <div class="form-group row">
                                             <label for="inputEmail" class="col-sm-2 col-form-label">Email</label>
                                             <div class="col-sm-10">
-                                                <input type="email" class="form-control " id="inputEmail" placeholder="Email">
+                                                <input v-model="form.email" type="email" class="form-control " id="inputEmail" placeholder="Email">
+                                                <span class="text-danger text-sm" v-if="errors && errors.email">{{ errors.email[0] }}</span>
                                             </div>
                                         </div>
                                         <div class="form-group row">

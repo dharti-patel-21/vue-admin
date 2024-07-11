@@ -36,6 +36,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/api/settings/update',[SettingsController::class, 'update']);
 
     Route::get('/api/profile',[ProfileController::class, 'index']);
+    Route::put('/api/update/profile',[ProfileController::class, 'update']);
 
     Route::get('/api/users', [UsersController::class, 'index']);
     Route::post('/api/createUser', [UsersController::class, 'store']);
