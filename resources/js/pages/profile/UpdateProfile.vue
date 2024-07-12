@@ -1,6 +1,7 @@
 <script setup>
 import { onMounted, ref } from "vue";
 import { useToastr } from "../../toastr";
+import Processor from "postcss/lib/processor";
 
 const toastr = useToastr();
 const form = ref({
@@ -29,6 +30,24 @@ const updateProfile = () => {
     });
 }
 
+const fileInput = ref(null);
+const profilePictureUrl = ref(null);
+
+const openFileInput = () => {
+    fileInput.value.click();
+}
+
+const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    profilePictureUrl.value = URL.createObjectURL(file);
+
+    const formData = new FormData();
+    formData.append('profile_image',file);
+    axios.post('/api/upload/profile-picture',formData)
+    .then((response) => {
+        toastr.success('Image uploaded successfully!');
+    });
+}
 onMounted(() => {
     getUser();
 })
@@ -58,8 +77,8 @@ onMounted(() => {
                     <div class="card card-primary card-outline">
                         <div class="card-body box-profile">
                             <div class="text-center">
-                                <input type="file" class="d-none">
-                                <img class="profile-user-img img-circle" src="/noimage.png" alt="User profile picture">
+                                <input @change="handleFileChange" ref="fileInput" type="file" class="d-none">
+                                <img @click="openFileInput" class="profile-user-img img-circle" :src="profilePictureUrl ? profilePictureUrl : form.profile_image" alt="User profile picture">
                             </div>
 
                             <h3 class="profile-username text-center">{{ form.name }}</h3>
@@ -143,3 +162,10 @@ onMounted(() => {
 
     </div>
 </template>
+
+<style>
+.profile-user-img:hover{
+    background-color: blue;
+    cursor: pointer;
+}
+</style>

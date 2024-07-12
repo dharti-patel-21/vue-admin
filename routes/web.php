@@ -37,6 +37,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/api/profile',[ProfileController::class, 'index']);
     Route::put('/api/update/profile',[ProfileController::class, 'update']);
+    Route::post('/api/upload/profile-picture',[ProfileController::class, 'updateProfileImage']);
 
     Route::get('/api/users', [UsersController::class, 'index']);
     Route::post('/api/createUser', [UsersController::class, 'store']);

@@ -9,6 +9,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use App\Enums\RoleType;
+use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable
 {
@@ -23,7 +24,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role'
+        'role',
+        'profile_image'
     ];
 
     /**
@@ -59,4 +61,12 @@ class User extends Authenticatable
             get: fn ($value) => RoleType::from($value)->name,
         );
     }
+
+    public function profileImage(): Attribute {
+        return Attribute::make(
+            get: fn ($value) => asset(Storage::url($value) ?? 'noimage.png'),
+        );
+    }
 }
+
+
