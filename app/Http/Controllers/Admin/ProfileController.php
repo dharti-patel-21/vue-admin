@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
+use App\Actions\Fortify\UpdateUserPassword;
 
 class ProfileController extends Controller
 {
@@ -35,5 +36,19 @@ class ProfileController extends Controller
             ]);
             return response()->json(['success'=>true]);
         }
+    }
+
+    public function changePassword(Request $request, UpdateUserPassword $updater){
+        $updater->update(
+            auth()->user(),
+            [
+                'current_password' => $request->currentPassword,
+                'password' => $request->password,
+                'password_confirmation' => $request->passwordConfirmation
+            ]
+        );
+
+        return response()->json(['success' => true]);
+
     }
 }

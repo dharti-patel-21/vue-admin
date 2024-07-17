@@ -13,7 +13,7 @@ class UsersController extends Controller
         $users = User::query()
             ->when(request('query'), function ($query,$searchQuery) {
                 $query->where('name','like',"%{$searchQuery}%");
-            })->latest()->paginate(2);
+            })->latest()->paginate(setting('pagination_limit'));
         return $users;
     }
 
@@ -61,7 +61,7 @@ class UsersController extends Controller
     public function search(){
         $searchQuery = request('query');
         
-        $users = User::where('name','like',"%{$searchQuery}%")->paginate(2);
+        $users = User::where('name','like',"%{$searchQuery}%")->paginate(setting('pagination_limit'));
         return response()->json($users);
     }
 
